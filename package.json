@@ -1,0 +1,33 @@
+{
+    "name": "bhojanpatri",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "BojanPatri",
+    "main": "index.js",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Manas Arora",
+    "license": "ISC",
+    "dependencies": {
+        "@tailwindcss/vite": "^4.1.18",
+        "@vitejs/plugin-react": "^4.3.4",
+        "firebase": "^12.8.0",
+        "qrcode.react": "^4.2.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "tailwindcss": "^4.1.18",
+        "vite": "^6.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/manas0x/BojanPatri.git"
+    },
+    "bugs": {
+        "url": "https://github.com/manas0x/BojanPatri/issues"
+    },
+    "homepage": "https://github.com/manas0x/BojanPatri#readme"
+}
