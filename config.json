@@ -1,0 +1,20 @@
+{
+    "shopname": "yellow bites",
+    "menu": [
+        {
+            "itemname": "Spring Rolls",
+            "price": 60,
+            "catg": "Appetizer"
+        },
+        {
+            "itemname": "Burger",
+            "price": 50,
+            "catg": "Main Course"
+        },
+        {
+            "itemname": "Chocolate Brownie",
+            "price": 70,
+            "catg": "Dessert"
+        }
+    ]
+}
