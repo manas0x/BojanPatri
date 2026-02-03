@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Header = ({ shopname, cartCount, onCartClick, onBack, isRoot = true, theme, onToggleTheme }) => {
+const Header = ({ shopname, cartCount, onCartClick, onBack, isRoot = true, theme, onToggleTheme, isSelfOrder, hasOrders, onMyOrdersClick }) => {
     return (
         <header className="sticky top-0 z-50 backdrop-blur-md bg-app-bg/80 border-b border-app-border">
             <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -21,6 +21,18 @@ const Header = ({ shopname, cartCount, onCartClick, onBack, isRoot = true, theme
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {isSelfOrder && hasOrders && (
+                        <button
+                            onClick={onMyOrdersClick}
+                            className="p-2 bg-indigo-500/10 rounded-xl text-indigo-500 hover:bg-indigo-500/20 transition-all border border-indigo-500/20 active:scale-95 flex items-center gap-2 pr-3"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">My Orders</span>
+                        </button>
+                    )}
+
                     <button
                         onClick={onToggleTheme}
                         className="p-2 bg-app-surface rounded-xl text-app-muted hover:text-app-text transition-colors border border-app-border"

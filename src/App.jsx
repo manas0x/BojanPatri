@@ -21,6 +21,7 @@ import ProductDetailView from './views/ProductDetailView'
 import DashboardView from './views/DashboardView'
 import PublicInvoiceView from './views/PublicInvoiceView'
 import LoginView from './views/LoginView'
+import OrderHistoryView from './views/OrderHistoryView'
 
 function App() {
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
@@ -188,6 +189,7 @@ function App() {
     const handleCheckout = async (customer, total, paymentMethod, tableNumber = '') => {
         try {
             const orderData = {
+                uid: user?.uid,
                 customer,
                 items: cartItems,
                 total,
@@ -264,7 +266,8 @@ function App() {
     const handleBackToMenu = () => {
         setCurrentView('menu')
         setSelectedProduct(null)
-        window.history.pushState({}, '', '/')
+        if (isSelfOrder) window.history.pushState({}, '', '/self')
+        else window.history.pushState({}, '', '/')
     }
 
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
@@ -284,6 +287,8 @@ function App() {
         )
     }
 
+    const myOrders = orders.filter(o => o.uid === user?.uid)
+
     return (
         <div className="min-h-screen bg-app-bg text-app-text selection:bg-indigo-500/30 font-sans pb-24 transition-colors duration-300">
             <Header
@@ -294,6 +299,9 @@ function App() {
                 onBack={handleBackToMenu}
                 theme={theme}
                 onToggleTheme={handleToggleTheme}
+                isSelfOrder={isSelfOrder}
+                hasOrders={myOrders.length > 0}
+                onMyOrdersClick={() => setCurrentView('myOrders')}
             />
 
             <main className="max-w-7xl mx-auto py-8">
@@ -307,6 +315,13 @@ function App() {
                         onAddToCart={handleAddToCart}
                         onProductClick={handleProductClick}
                         unavailableItems={unavailableItems}
+                    />
+                )}
+
+                {currentView === 'myOrders' && (
+                    <OrderHistoryView
+                        orders={myOrders}
+                        onBack={handleBackToMenu}
                     />
                 )}
 
@@ -329,6 +344,7 @@ function App() {
                         onToggleAvailability={handleToggleAvailability}
                         onLogout={handleLogout}
                         user={user}
+                        customers={customers}
                     />
                 )}
             </main>

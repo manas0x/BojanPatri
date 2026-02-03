@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import AdminQRView from './AdminQRView'
 
-const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, unavailableItems, onToggleAvailability, onLogout, user }) => {
+const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, unavailableItems, onToggleAvailability, onLogout, user, customers = [] }) => {
     const [activeTab, setActiveTab] = useState('overview')
 
     const totalRev = orders.reduce((sum, order) => sum + order.total, 0)
@@ -87,6 +87,12 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                         className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex-shrink-0 ${activeTab === 'qr' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
                     >
                         QR Code
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('customers')}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex-shrink-0 ${activeTab === 'customers' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
+                    >
+                        Customers
                     </button>
                 </div>
             </div>
@@ -232,6 +238,29 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                                 </div>
                             )
                         })}
+                    </div>
+                </div>
+            ) : activeTab === 'customers' ? (
+                <div className="animate-fade-in space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <h3 className="text-xs font-black text-app-text uppercase tracking-[0.2em] leading-none">Registered Customers</h3>
+                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">{customers.length} People</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {customers.sort((a, b) => new Date(b.lastOrder) - new Date(a.lastOrder)).map((customer, idx) => (
+                            <div key={idx} className="bg-app-surface/60 backdrop-blur-md p-6 rounded-[2.5rem] border border-app-border/40 shadow-xl flex items-center gap-4">
+                                <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 font-black text-xl">
+                                    {customer.name?.charAt(0) || 'C'}
+                                </div>
+                                <div className="flex-1 overflow-hidden">
+                                    <h4 className="text-app-text font-black uppercase text-sm truncate">{customer.name}</h4>
+                                    <p className="text-app-muted text-[10px] font-bold uppercase tracking-widest">{customer.phone}</p>
+                                    <p className="text-indigo-500/60 text-[8px] font-black uppercase tracking-tighter mt-1">
+                                        Last Order: {new Date(customer.lastOrder).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             ) : (
