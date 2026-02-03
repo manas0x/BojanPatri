@@ -7,11 +7,13 @@ import {
     deleteDoc,
     doc,
     setDoc,
+    getDoc,
     query,
-    orderBy
+    orderBy,
+    runTransaction
 } from 'firebase/firestore'
 import { db, auth } from './firebase'
-import { onAuthStateChanged, signOut, signInAnonymously } from 'firebase/auth'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
 import config from '../config.json'
 import Header from './components/Header'
 import Cart from './components/Cart'
@@ -39,6 +41,14 @@ function App() {
     const [isSelfOrder, setIsSelfOrder] = useState(() => window.location.pathname === '/self')
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [orders, setOrders] = useState([])
+    const [localOrderIds, setLocalOrderIds] = useState(() => {
+        const saved = localStorage.getItem('orderHistory')
+        return saved ? JSON.parse(saved) : []
+    })
+    const [localCustomer, setLocalCustomer] = useState(() => {
+        const saved = localStorage.getItem('customerProfile')
+        return saved ? JSON.parse(saved) : { name: '', phone: '' }
+    })
     const [customers, setCustomers] = useState([])
     const [unavailableItems, setUnavailableItems] = useState([])
     const [menu, setMenu] = useState([])
@@ -83,11 +93,7 @@ function App() {
             if (u) {
                 setUser(u)
             } else {
-                try {
-                    await signInAnonymously(auth)
-                } catch (err) {
-                    console.error("Anonymous auth failed:", err)
-                }
+                setUser(null)
             }
         })
         return () => unsubscribe()
@@ -191,8 +197,24 @@ function App() {
 
     const handleCheckout = async (customer, total, paymentMethod, tableNumber = '') => {
         try {
+            // Sequential Order ID Logic
+            let displayId = ''
+            await runTransaction(db, async (transaction) => {
+                const counterRef = doc(db, 'settings', 'orderCounter')
+                const counterSnap = await transaction.get(counterRef)
+
+                let nextId = 1001
+                if (counterSnap.exists()) {
+                    nextId = counterSnap.data().index + 1
+                }
+
+                transaction.set(counterRef, { index: nextId }, { merge: true })
+                displayId = nextId.toString()
+            })
+
             const orderData = {
-                uid: user?.uid,
+                uid: !isSelfOrder ? user?.uid : null,
+                displayId: displayId, // Sequential ID like 1002
                 customer,
                 items: cartItems,
                 total,
@@ -204,6 +226,18 @@ function App() {
             }
             // Save Order
             const docRef = await addDoc(collection(db, 'orders'), orderData)
+
+            // Save for local history if self-order
+            if (isSelfOrder) {
+                const newIds = [...localOrderIds, docRef.id]
+                setLocalOrderIds(newIds)
+                localStorage.setItem('orderHistory', JSON.stringify(newIds))
+
+                // Save customer profile locally for autofill
+                const profile = { name: customer.name, phone: customer.phone }
+                setLocalCustomer(profile)
+                localStorage.setItem('customerProfile', JSON.stringify(profile))
+            }
 
             // Save/Update Customer Profile
             const phoneKey = customer.phone.replace(/\D/g, '')
@@ -217,7 +251,7 @@ function App() {
 
             setCartItems([])
             setCurrentView('menu')
-            alert(`Order confirmed via ${paymentMethod}! ID: ${docRef.id}`)
+            alert(`Order confirmed via ${paymentMethod}! ID: #${displayId}`)
         } catch (err) {
             console.error("Error adding order: ", err)
             alert("Checkout failed. Please check your connection.")
@@ -304,7 +338,7 @@ function App() {
         return <PublicInvoiceView order={invOrder} config={config} theme={theme} />
     }
 
-    if (!isSelfOrder && (!user || user.isAnonymous)) {
+    if (!isSelfOrder && !user) {
         return (
             <div className="min-h-screen bg-app-bg text-app-text transition-colors duration-300 flex flex-col justify-center">
                 <LoginView onLoginSuccess={() => handleViewChange('dashboard')} />
@@ -312,7 +346,9 @@ function App() {
         )
     }
 
-    const myOrders = orders.filter(o => o.uid === user?.uid)
+    const myOrders = isSelfOrder
+        ? orders.filter(o => localOrderIds.includes(o.id))
+        : orders.filter(o => o.uid === user?.uid)
 
     return (
         <div className="min-h-screen bg-app-bg text-app-text selection:bg-indigo-500/30 font-sans pb-24 transition-colors duration-300">
@@ -384,6 +420,7 @@ function App() {
                 onCheckout={(customer, total, paymentMethod, tableNumber) => handleCheckout(customer, total, paymentMethod, tableNumber)}
                 customers={customers}
                 isSelfOrder={isSelfOrder}
+                localCustomer={localCustomer}
             />
 
             <BottomNav

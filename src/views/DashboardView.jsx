@@ -17,8 +17,8 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
     const sendWhatsApp = (order) => {
         const date = new Date(order.timestamp).toLocaleString()
         const origin = window.location.origin
-        const orderId = order.id || 'N/A'
-        const invoiceUrl = `${origin}/invoice/${orderId}`
+        const orderId = order.displayId ? `#${order.displayId}` : (order.id || 'N/A')
+        const invoiceUrl = `${origin}/invoice/${order.id}`
         const nameOfShop = shopname || 'Our Shop'
         const message = `Dear ${order.customer.name},\n\nThank you for your recent order at ${nameOfShop}! Your invoice is now available. 🪄\n\n💰 Amount : Rs.${order.total}\n📅 Date : ${date}\n🔗 View Invoice : ${invoiceUrl}\n\nLoved your experience? Or something to improve? Tap to tell us! 💬✨`
         const encoded = encodeURIComponent(message)
@@ -172,6 +172,7 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                                             <div className="flex items-center gap-2">
                                                 <span className={`w-2 h-2 rounded-full ${order.status === 'ready' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 shadow-[0_0_10px_#f59e0b]'}`}></span>
                                                 <h4 className="text-app-text font-black uppercase text-sm">{order.customer.name}</h4>
+                                                <span className="text-[10px] font-black text-indigo-500/60 ml-1">#{order.displayId || '...'}</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${order.paymentMethod === 'UPI' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'}`}>

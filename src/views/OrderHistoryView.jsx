@@ -30,6 +30,7 @@ const OrderHistoryView = ({ orders, onBack }) => {
                                     <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter mb-1 inline-block ${order.status === 'ready' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
                                         {order.status === 'ready' ? 'Ready to Serve' : 'Preparing...'}
                                     </span>
+                                    <span className="text-[10px] font-black text-indigo-500/60 ml-2">#{order.displayId || (order.id ? order.id.slice(0, 5) : '...')}</span>
                                     <p className="text-[10px] font-bold text-app-muted uppercase tracking-widest">
                                         {new Date(order.timestamp).toLocaleDateString()} &bull; {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>

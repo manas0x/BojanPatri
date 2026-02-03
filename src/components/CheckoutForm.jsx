@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
-const CheckoutForm = ({ onSubmit, onBack, customers = [], isSelfOrder }) => {
-    const [customer, setCustomer] = useState({ name: '', phone: '' })
+const CheckoutForm = ({ onSubmit, onBack, customers = [], isSelfOrder, localCustomer = { name: '', phone: '' } }) => {
+    const [customer, setCustomer] = useState(localCustomer)
     const [paymentMethod, setPaymentMethod] = useState('UPI')
     const [tableNumber, setTableNumber] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
@@ -26,10 +26,10 @@ const CheckoutForm = ({ onSubmit, onBack, customers = [], isSelfOrder }) => {
         setShowSuggestions(false)
     }
 
-    const suggestions = customers.filter(c =>
+    const suggestions = !isSelfOrder ? customers.filter(c =>
         c.phone.replace(/\D/g, '').includes(customer.phone.replace(/\D/g, '')) ||
         c.name.toLowerCase().includes(customer.phone.toLowerCase())
-    ).slice(0, 3)
+    ).slice(0, 3) : []
 
     return (
         <div className="animate-slide-left p-6 flex flex-col h-full bg-app-bg transition-colors duration-300">

@@ -8,7 +8,10 @@ const PublicInvoiceView = ({ order, config }) => {
             <div className="max-w-xl mx-auto border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
                 <div className="bg-slate-950 p-8 text-white">
                     <h1 className="text-2xl font-black uppercase tracking-tighter mb-1">{config.shopname}</h1>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Digital Invoice</p>
+                    <div className="flex justify-between items-center">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Digital Invoice</p>
+                        {order.displayId && <p className="text-indigo-400 text-[10px] font-black uppercase tracking-widest">#{order.displayId}</p>}
+                    </div>
                 </div>
 
                 <div className="p-8">

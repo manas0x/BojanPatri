@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import CheckoutForm from './CheckoutForm'
 
-const Cart = ({ isOpen, onClose, cartItems, onUpdateQuantity, onCheckout, customers, isSelfOrder }) => {
+const Cart = ({ isOpen, onClose, cartItems, onUpdateQuantity, onCheckout, customers, isSelfOrder, localCustomer }) => {
     const [isCheckingOut, setIsCheckingOut] = useState(false)
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
@@ -28,6 +28,7 @@ const Cart = ({ isOpen, onClose, cartItems, onUpdateQuantity, onCheckout, custom
                             onBack={() => setIsCheckingOut(false)}
                             customers={customers}
                             isSelfOrder={isSelfOrder}
+                            localCustomer={localCustomer}
                         />
                     ) : (
                         <>
