@@ -2,18 +2,33 @@
     "shopname": "yellow bites",
     "menu": [
         {
-            "itemname": "Spring Rolls",
-            "price": 60,
+            "itemname": "Classic Spring Rolls",
+            "price": 120,
             "catg": "Appetizer"
         },
         {
-            "itemname": "Burger",
-            "price": 50,
+            "itemname": "Spicy Veggie Burger",
+            "price": 150,
             "catg": "Main Course"
         },
         {
-            "itemname": "Chocolate Brownie",
-            "price": 70,
+            "itemname": "Paneer Tikka Platter",
+            "price": 280,
+            "catg": "Appetizer"
+        },
+        {
+            "itemname": "Double Cheese Pizza",
+            "price": 350,
+            "catg": "Main Course"
+        },
+        {
+            "itemname": "Chocolate Lava Brownie",
+            "price": 180,
+            "catg": "Dessert"
+        },
+        {
+            "itemname": "Fruit Sundae",
+            "price": 140,
             "catg": "Dessert"
         }
     ]
