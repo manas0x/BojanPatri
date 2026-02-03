@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import CheckoutForm from './CheckoutForm'
 
-const Cart = ({ isOpen, onClose, cartItems, onUpdateQuantity, onCheckout, customers }) => {
+const Cart = ({ isOpen, onClose, cartItems, onUpdateQuantity, onCheckout, customers, isSelfOrder }) => {
     const [isCheckingOut, setIsCheckingOut] = useState(false)
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
     if (!isOpen) return null
 
-    const handleCheckoutSubmit = (customer) => {
-        onCheckout(customer, total)
+    const handleCheckoutSubmit = (customer, paymentMethod) => {
+        onCheckout(customer, total, paymentMethod)
         setIsCheckingOut(false)
         onClose()
     }
@@ -27,6 +27,7 @@ const Cart = ({ isOpen, onClose, cartItems, onUpdateQuantity, onCheckout, custom
                             onSubmit={handleCheckoutSubmit}
                             onBack={() => setIsCheckingOut(false)}
                             customers={customers}
+                            isSelfOrder={isSelfOrder}
                         />
                     ) : (
                         <>

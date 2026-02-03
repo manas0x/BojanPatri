@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
 
-const CheckoutForm = ({ onSubmit, onBack, customers = [] }) => {
+const CheckoutForm = ({ onSubmit, onBack, customers = [], isSelfOrder }) => {
     const [customer, setCustomer] = useState({ name: '', phone: '' })
     const [paymentMethod, setPaymentMethod] = useState('UPI')
+    const [tableNumber, setTableNumber] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
 
     const handleSubmit = (e) => {
         e.preventDefault()
         if (customer.name && customer.phone) {
-            onSubmit(customer, paymentMethod)
+            onSubmit(customer, paymentMethod, tableNumber)
         }
     }
 
@@ -44,6 +45,20 @@ const CheckoutForm = ({ onSubmit, onBack, customers = [] }) => {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6 flex-1">
+                {isSelfOrder && (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                        <label className="block text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-2 px-1">Table Number</label>
+                        <input
+                            required
+                            type="number"
+                            value={tableNumber}
+                            onChange={(e) => setTableNumber(e.target.value)}
+                            className="w-full bg-app-surface border-2 border-indigo-500/30 rounded-3xl py-5 px-6 text-app-text placeholder-app-muted/30 focus:border-indigo-500 outline-none transition-all shadow-xl text-2xl font-black"
+                            placeholder="e.g. 05"
+                        />
+                    </div>
+                )}
+
                 <div className="relative">
                     <label className="block text-[10px] font-black text-app-muted uppercase tracking-[0.2em] mb-2 px-1">Phone Number</label>
                     <input

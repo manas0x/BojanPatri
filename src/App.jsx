@@ -31,12 +31,47 @@ function App() {
     const [currentView, setCurrentView] = useState(() => {
         const path = window.location.pathname
         if (path.startsWith('/invoice/')) return 'invoice'
-        return 'menu'
+        if (path === '/self') return 'menu'
+        // Root (/) and /admin both go to dashboard
+        return 'dashboard'
     })
+    const [isSelfOrder, setIsSelfOrder] = useState(() => window.location.pathname === '/self')
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [orders, setOrders] = useState([])
     const [customers, setCustomers] = useState([])
     const [unavailableItems, setUnavailableItems] = useState([])
+    const [menu, setMenu] = useState([])
+
+    // Watch URL changes (popstate)
+    useEffect(() => {
+        const handlePopState = () => {
+            const path = window.location.pathname
+            if (path.startsWith('/invoice/')) {
+                setCurrentView('invoice')
+                setIsSelfOrder(false)
+            } else if (path === '/self') {
+                setCurrentView('menu')
+                setIsSelfOrder(true)
+            } else { // Handles '/' and '/admin'
+                setCurrentView('dashboard')
+                setIsSelfOrder(false)
+            }
+        }
+        window.addEventListener('popstate', handlePopState)
+        return () => window.removeEventListener('popstate', handlePopState)
+    }, [])
+
+    const handleViewChange = (view) => {
+        setCurrentView(view)
+        if (view === 'dashboard') {
+            window.history.pushState({}, '', '/') // Changed to root for dashboard
+            setIsSelfOrder(false)
+        } else if (view === 'menu') {
+            // Always treat menu view as self-ordering for customers if they navigate here
+            window.history.pushState({}, '', '/self')
+            setIsSelfOrder(true)
+        }
+    }
 
     // Auth Listener
     useEffect(() => {
@@ -57,7 +92,7 @@ function App() {
     const handleLogout = async () => {
         try {
             await signOut(auth)
-            setCurrentView('menu')
+            handleViewChange('menu')
         } catch (err) {
             alert('Sign out failed.')
         }
@@ -108,10 +143,23 @@ function App() {
         return () => unsubscribe()
     }, [])
 
-    const categories = ['All', ...new Set(config.menu.map(item => item.catg))]
+    // Listen for Menu Products
+    useEffect(() => {
+        const q = query(collection(db, 'products'), orderBy('catg', 'asc'))
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const menuData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            setMenu(menuData.length > 0 ? menuData : config.menu) // Fallback to config if DB empty
+        })
+        return () => unsubscribe()
+    }, [])
+
+    const categories = ['All', ...new Set(menu.map(item => item.catg))]
     const filteredMenu = activeCategory === 'All'
-        ? config.menu
-        : config.menu.filter(item => item.catg === activeCategory)
+        ? menu
+        : menu.filter(item => item.catg === activeCategory)
 
     const handleAddToCart = (item) => {
         if (unavailableItems.includes(item.itemname)) return
@@ -137,13 +185,15 @@ function App() {
         }).filter(item => item.quantity > 0))
     }
 
-    const handleCheckout = async (customer, total, paymentMethod) => {
+    const handleCheckout = async (customer, total, paymentMethod, tableNumber = '') => {
         try {
             const orderData = {
                 customer,
                 items: cartItems,
                 total,
                 paymentMethod,
+                tableNumber: tableNumber,
+                type: isSelfOrder ? 'dine-in' : 'takeaway',
                 timestamp: new Date().toISOString(),
                 status: 'pending'
             }
@@ -226,6 +276,14 @@ function App() {
         return <PublicInvoiceView order={invOrder} config={config} theme={theme} />
     }
 
+    if (!isSelfOrder && (!user || user.isAnonymous)) {
+        return (
+            <div className="min-h-screen bg-app-bg text-app-text transition-colors duration-300 flex flex-col justify-center">
+                <LoginView onLoginSuccess={() => handleViewChange('dashboard')} />
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-app-bg text-app-text selection:bg-indigo-500/30 font-sans pb-24 transition-colors duration-300">
             <Header
@@ -261,21 +319,17 @@ function App() {
                 )}
 
                 {currentView === 'dashboard' && (
-                    !user ? (
-                        <LoginView onLoginSuccess={() => setCurrentView('dashboard')} />
-                    ) : (
-                        <DashboardView
-                            orders={orders}
-                            onRemoveOrder={handleRemoveOrder}
-                            onToggleStatus={handleToggleStatus}
-                            shopname={config.shopname}
-                            menu={config.menu}
-                            unavailableItems={unavailableItems}
-                            onToggleAvailability={handleToggleAvailability}
-                            onLogout={handleLogout}
-                            user={user}
-                        />
-                    )
+                    <DashboardView
+                        orders={orders}
+                        onRemoveOrder={handleRemoveOrder}
+                        onToggleStatus={handleToggleStatus}
+                        shopname={config.shopname}
+                        menu={menu}
+                        unavailableItems={unavailableItems}
+                        onToggleAvailability={handleToggleAvailability}
+                        onLogout={handleLogout}
+                        user={user}
+                    />
                 )}
             </main>
 
@@ -284,13 +338,15 @@ function App() {
                 onClose={() => setIsCartOpen(false)}
                 cartItems={cartItems}
                 onUpdateQuantity={handleUpdateQuantity}
-                onCheckout={(customer, total, paymentMethod) => handleCheckout(customer, total, paymentMethod)}
+                onCheckout={(customer, total, paymentMethod, tableNumber) => handleCheckout(customer, total, paymentMethod, tableNumber)}
                 customers={customers}
+                isSelfOrder={isSelfOrder}
             />
 
             <BottomNav
                 currentView={currentView}
-                onViewChange={setCurrentView}
+                onViewChange={handleViewChange}
+                hideAdmin={isSelfOrder}
             />
         </div>
     )
