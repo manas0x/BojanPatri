@@ -1,0 +1,194 @@
+import React from 'react'
+
+const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, unavailableItems, onToggleAvailability }) => {
+    const [activeTab, setActiveTab] = React.useState('overview') // 'overview', 'inventory'
+
+    const totalRev = orders.reduce((sum, order) => sum + order.total, 0)
+    const totalOrders = orders.length
+    const avgOrderValue = totalOrders > 0 ? Math.round(totalRev / totalOrders) : 0
+
+    const itemStats = orders.flatMap(o => o.items).reduce((acc, item) => {
+        acc[item.itemname] = (acc[item.itemname] || 0) + item.quantity
+        return acc
+    }, {})
+    const popularItem = Object.entries(itemStats).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
+
+    const sendWhatsApp = (order) => {
+        const date = new Date(order.timestamp).toLocaleString()
+        const origin = window.location.origin
+        const orderId = order.id || 'N/A'
+        const invoiceUrl = `${origin}/invoice/${orderId}`
+        const nameOfShop = shopname || 'Our Shop'
+        const message = `Dear ${order.customer.name},\n\nThank you for your recent order at ${nameOfShop}! Your invoice is now available. 🪄\n\n💰 Amount : Rs.${order.total}\n📅 Date : ${date}\n🔗 View Invoice : ${invoiceUrl}\n\nLoved your experience? Or something to improve? Tap to tell us! 💬✨`
+        const encoded = encodeURIComponent(message)
+        const rawPhone = order.customer.phone.replace(/\D/g, '')
+        const formattedPhone = rawPhone.startsWith('91') && rawPhone.length > 10 ? rawPhone : `91${rawPhone}`
+        window.open(`https://wa.me/${formattedPhone}?text=${encoded}`, '_blank')
+    }
+
+    // Calculate Top Selling Items
+    const itemCounts = orders.reduce((acc, order) => {
+        order.items.forEach(item => {
+            acc[item.itemname] = (acc[item.itemname] || 0) + item.quantity
+        })
+        return acc
+    }, {})
+
+    const topSelling = Object.entries(itemCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 5)
+
+    return (
+        <div className="animate-fade-in p-6 pb-32">
+            <div className="mb-8 flex justify-between items-start">
+                <div>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-4xl font-black text-app-text uppercase tracking-tighter leading-none">Admin</h2>
+                        <button
+                            onClick={onLogout}
+                            className="px-3 py-1 bg-app-surface border border-app-border rounded-lg text-[8px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500/10 transition-colors mt-1"
+                        >
+                            Sign Out
+                        </button>
+                    </div>
+                    <p className="text-emerald-500 font-bold uppercase tracking-widest text-[10px] mt-1">Command Center</p>
+                </div>
+                <div className="bg-app-surface border border-app-border p-1 rounded-2xl flex gap-1 shadow-2xl">
+                    <button
+                        onClick={() => setActiveTab('overview')}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
+                    >
+                        Insights
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('inventory')}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
+                    >
+                        Stock
+                    </button>
+                </div>
+            </div>
+
+            {activeTab === 'overview' ? (
+                <div className="animate-fade-in space-y-10">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-app-surface p-5 rounded-3xl border border-app-border shadow-xl border-b-indigo-500/40 border-b-2">
+                            <span className="text-[9px] font-black text-app-muted uppercase tracking-widest block mb-1">Revenue</span>
+                            <span className="text-2xl font-black text-app-text leading-none">₹{totalRev}</span>
+                        </div>
+                        <div className="bg-app-surface p-5 rounded-3xl border border-app-border shadow-xl border-b-purple-500/40 border-b-2">
+                            <span className="text-[9px] font-black text-app-muted uppercase tracking-widest block mb-1">Volume</span>
+                            <span className="text-2xl font-black text-app-text leading-none">{totalOrders}</span>
+                        </div>
+                        <div className="bg-app-surface p-5 rounded-3xl border border-app-border shadow-xl border-b-emerald-500/40 border-b-2">
+                            <span className="text-[9px] font-black text-app-muted uppercase tracking-widest block mb-1">Avg Ticket</span>
+                            <span className="text-2xl font-black text-app-text leading-none">₹{avgOrderValue}</span>
+                        </div>
+                        <div className="bg-app-surface p-5 rounded-3xl border border-app-border shadow-xl border-b-amber-500/40 border-b-2 overflow-hidden">
+                            <span className="text-[9px] font-black text-app-muted uppercase tracking-widest block mb-1">Fan Fav</span>
+                            <span className="text-xs font-black text-app-text uppercase truncate block">{popularItem}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-xs font-black text-app-text uppercase tracking-[0.2em] px-2 leading-none">Top Selling</h3>
+                        <div className="bg-app-surface/50 p-6 rounded-[2.5rem] border border-app-border/40">
+                            <div className="space-y-4">
+                                {topSelling.map(([name, count], i) => (
+                                    <div key={name} className="flex items-center gap-4">
+                                        <span className="text-[10px] font-black text-app-muted w-4">0{i + 1}</span>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-xs font-bold text-app-text uppercase">{name}</span>
+                                                <span className="text-[10px] font-black text-indigo-500 uppercase">{count} Sold</span>
+                                            </div>
+                                            <div className="w-full h-1.5 bg-app-bg rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-indigo-500 rounded-full"
+                                                    style={{ width: `${(count / topSelling[0][1]) * 100}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-app-surface/30 p-6 rounded-[2.5rem] border border-app-border/50">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xs font-black text-app-text uppercase tracking-[0.2em]">Daily Target</h3>
+                            <span className="text-[10px] font-bold text-app-muted">Progress</span>
+                        </div>
+                        <div className="w-full h-8 bg-app-bg rounded-2xl p-1 border border-app-border/50">
+                            <div className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.3)] animate-pulse" style={{ width: '50%' }}></div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-xs font-black text-app-text uppercase tracking-[0.2em] px-2 leading-none">Recent Logs</h3>
+                        <div className="space-y-3">
+                            {orders.slice(-5).reverse().map((order) => (
+                                <div key={order.id} className="bg-app-surface/50 p-5 rounded-[2rem] border border-app-border/40 shadow-sm relative group overflow-hidden">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'ready' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 shadow-[0_0_10px_#f59e0b]'}`}></span>
+                                            <h4 className="text-app-text font-black uppercase text-[12px]">{order.customer.name}</h4>
+                                        </div>
+                                        <span className="text-sm font-black text-app-text">₹{order.total}</span>
+                                    </div>
+                                    <div className="flex gap-2 mb-4">
+                                        <span className="text-[8px] font-bold text-app-muted uppercase pt-0.5">{order.id}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => onToggleStatus(order.id)}
+                                            className={`py-2 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${order.status === 'ready' ? 'bg-app-bg text-app-muted border border-app-border' : 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/20'}`}
+                                        >
+                                            {order.status === 'ready' ? 'Complete' : 'Pending'}
+                                        </button>
+                                        <button onClick={() => sendWhatsApp(order)} className="bg-indigo-600/10 text-indigo-400 border border-indigo-500/10 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest">WhatsApp</button>
+                                    </div>
+                                    <button onClick={() => onRemoveOrder(order.id)} className="absolute top-4 right-4 text-app-muted group-hover:text-red-500 transition-colors">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="animate-fade-in space-y-6">
+                    <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-3xl flex gap-3 mb-8">
+                        <svg className="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <p className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wide leading-tight">
+                            Toggling stock will instantly hide or show items from your customer's digital menu.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                        {menu.map((item, idx) => {
+                            const isOut = unavailableItems.includes(item.itemname)
+                            return (
+                                <div key={idx} className="bg-app-surface/40 p-5 rounded-[2rem] border border-app-border/30 flex justify-between items-center group shadow-sm">
+                                    <div>
+                                        <h4 className={`font-black uppercase text-sm transition-colors ${isOut ? 'text-app-muted' : 'text-app-text'}`}>{item.itemname}</h4>
+                                        <span className="text-[8px] font-bold text-app-muted uppercase tracking-widest">{item.catg} &bull; ₹{item.price}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => onToggleAvailability(item.itemname)}
+                                        className={`px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isOut ? 'bg-red-600/10 text-red-500 border border-red-500/20' : 'bg-emerald-600/10 text-emerald-500 border border-emerald-500/20'}`}
+                                    >
+                                        {isOut ? 'Out of Stock' : 'In Stock'}
+                                    </button>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default DashboardView
