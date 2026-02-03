@@ -7,8 +7,8 @@ const Cart = ({ isOpen, onClose, cartItems, onUpdateQuantity, onCheckout, custom
 
     if (!isOpen) return null
 
-    const handleCheckoutSubmit = (customer, paymentMethod) => {
-        onCheckout(customer, total, paymentMethod)
+    const handleCheckoutSubmit = (customer, paymentMethod, tableNumber) => {
+        onCheckout(customer, total, paymentMethod, tableNumber)
         setIsCheckingOut(false)
         onClose()
     }

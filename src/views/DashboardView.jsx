@@ -39,6 +39,21 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
         .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
 
+    // Sound Notification for New Orders
+    React.useEffect(() => {
+        if (orders.length > 0 && user && !user.isAnonymous) {
+            const lastOrder = orders[orders.length - 1]
+            const now = new Date().getTime()
+            const orderTime = new Date(lastOrder.timestamp).getTime()
+
+            // Only play for very recent orders (last 10 seconds)
+            if (now - orderTime < 10000) {
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
+                audio.play().catch(e => console.log('Audio play blocked or failed'))
+            }
+        }
+    }, [orders.length, user])
+
     return (
         <div className="animate-fade-in p-6 pb-32">
             <div className="mb-8 flex justify-between items-start print:hidden">
@@ -133,33 +148,56 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="text-xs font-black text-app-text uppercase tracking-[0.2em] px-2 leading-none">Recent Logs</h3>
-                        <div className="space-y-3">
-                            {orders.slice(-5).reverse().map((order) => (
-                                <div key={order.id} className="bg-app-surface/50 p-5 rounded-[2rem] border border-app-border/40 shadow-sm relative group overflow-hidden">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'ready' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 shadow-[0_0_10px_#f59e0b]'}`}></span>
-                                            <h4 className="text-app-text font-black uppercase text-[12px]">{order.customer.name}</h4>
-                                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${order.paymentMethod === 'UPI' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                                {order.paymentMethod || 'CASH'}
-                                            </span>
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="text-xs font-black text-app-text uppercase tracking-[0.2em] leading-none">Live Orders</h3>
+                            <span className="text-[10px] font-bold text-emerald-500 animate-pulse uppercase tracking-widest">Real-time</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {orders.slice().reverse().map((order) => (
+                                <div key={order.id} className="bg-app-surface/60 backdrop-blur-md p-6 rounded-[2.5rem] border border-app-border/40 shadow-xl relative group overflow-hidden transition-all hover:scale-[1.02]">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`w-2 h-2 rounded-full ${order.status === 'ready' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 shadow-[0_0_10px_#f59e0b]'}`}></span>
+                                                <h4 className="text-app-text font-black uppercase text-sm">{order.customer.name}</h4>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${order.paymentMethod === 'UPI' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                                    {order.paymentMethod || 'CASH'}
+                                                </span>
+                                                {order.tableNumber && (
+                                                    <span className="text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter bg-emerald-500/20 text-emerald-400">
+                                                        Table {order.tableNumber}
+                                                    </span>
+                                                )}
+                                                <span className="text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter bg-app-bg text-app-muted">
+                                                    {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <span className="text-sm font-black text-app-text">₹{order.total}</span>
+                                        <span className="text-lg font-black text-app-text">₹{order.total}</span>
                                     </div>
-                                    <div className="flex gap-2 mb-4">
-                                        <span className="text-[8px] font-bold text-app-muted uppercase pt-0.5">{order.id}</span>
+
+                                    <div className="space-y-2 mb-6 bg-app-bg/30 p-4 rounded-2xl border border-app-border/20">
+                                        {order.items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center text-[11px] font-bold">
+                                                <span className="text-app-text uppercase truncate max-w-[150px]">{item.itemname}</span>
+                                                <span className="text-app-muted shrink-0">x{item.quantity}</span>
+                                            </div>
+                                        ))}
                                     </div>
+
                                     <div className="grid grid-cols-2 gap-2">
                                         <button
                                             onClick={() => onToggleStatus(order.id)}
-                                            className={`py-2 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${order.status === 'ready' ? 'bg-app-bg text-app-muted border border-app-border' : 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/20'}`}
+                                            className={`py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${order.status === 'ready' ? 'bg-app-bg text-app-muted border border-app-border' : 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-600/30'}`}
                                         >
-                                            {order.status === 'ready' ? 'Complete' : 'Pending'}
+                                            {order.status === 'ready' ? 'Completed' : 'Mark Ready'}
                                         </button>
-                                        <button onClick={() => sendWhatsApp(order)} className="bg-indigo-600/10 text-indigo-400 border border-indigo-500/10 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest">WhatsApp</button>
+                                        <button onClick={() => sendWhatsApp(order)} className="bg-indigo-600/20 text-indigo-400 border border-indigo-500/40 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600/30 transition-all">WhatsApp</button>
                                     </div>
-                                    <button onClick={() => onRemoveOrder(order.id)} className="absolute top-4 right-4 text-app-muted group-hover:text-red-500 transition-colors">
+
+                                    <button onClick={() => onRemoveOrder(order.id)} className="absolute top-6 right-6 text-app-muted group-hover:text-red-500/50 hover:!text-red-500 transition-colors opacity-0 group-hover:opacity-100">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </div>

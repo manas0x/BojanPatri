@@ -45,16 +45,32 @@ const PublicInvoiceView = ({ order, config }) => {
 
                     <div className="mt-12 text-center">
                         <p className="text-slate-400 text-xs italic mb-4">Thank you for shopping with us!</p>
-                        <div className="w-16 h-1 bg-slate-100 mx-auto rounded-full"></div>
+                        <div className="w-16 h-1 bg-slate-100 mx-auto rounded-full mb-8"></div>
+
+                        <div className="pt-8 border-t border-slate-100">
+                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Developed By</p>
+                            <a
+                                href="https://manas0x.site"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-500 font-black text-sm hover:text-indigo-600 transition-colors uppercase tracking-widest"
+                            >
+                                Manas Arora
+                            </a>
+                            <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest">manas0x.site</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="text-center mt-8 pb-10">
+            <div className="text-center mt-12 pb-20 print:hidden">
                 <button
                     onClick={() => window.print()}
-                    className="text-[10px] font-black text-slate-400 uppercase tracking-widest border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors"
+                    className="bg-slate-950 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl active:scale-95 flex items-center gap-3 mx-auto"
                 >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
                     Print Invoice
                 </button>
             </div>

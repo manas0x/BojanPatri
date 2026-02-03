@@ -20,7 +20,7 @@ const AdminQRView = ({ shopname }) => {
 
                 <div className="bg-slate-50 p-6 rounded-[2.5rem] inline-block mb-10 border-2 border-slate-100 shadow-inner">
                     <QRCodeSVG
-                        value={currentUrl}
+                        value={currentUrl + '/self'}
                         size={220}
                         level="H"
                         includeMargin={false}
