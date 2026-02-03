@@ -68,9 +68,12 @@ function App() {
             window.history.pushState({}, '', '/') // Changed to root for dashboard
             setIsSelfOrder(false)
         } else if (view === 'menu') {
-            // Always treat menu view as self-ordering for customers if they navigate here
-            window.history.pushState({}, '', '/self')
-            setIsSelfOrder(true)
+            // Only push /self if we are already in self-order mode or explicitly starting it
+            if (isSelfOrder) {
+                window.history.pushState({}, '', '/self')
+            } else {
+                window.history.pushState({}, '', '/')
+            }
         }
     }
 
@@ -257,6 +260,28 @@ function App() {
         }
     }
 
+    const handleProductAdd = async (product) => {
+        try {
+            await addDoc(collection(db, 'products'), {
+                ...product,
+                timestamp: new Date().toISOString()
+            })
+            alert("Product added successfully!")
+        } catch (err) {
+            console.error("Error adding product:", err)
+            alert("Failed to add product.")
+        }
+    }
+
+    const handleProductDelete = async (productId) => {
+        if (!confirm("Are you sure you want to delete this product?")) return
+        try {
+            await deleteDoc(doc(db, 'products', productId))
+        } catch (err) {
+            alert("Delete failed.")
+        }
+    }
+
     const handleProductClick = (product) => {
         setSelectedProduct(product)
         setCurrentView('detail')
@@ -345,6 +370,8 @@ function App() {
                         onLogout={handleLogout}
                         user={user}
                         customers={customers}
+                        onProductAdd={handleProductAdd}
+                        onProductDelete={handleProductDelete}
                     />
                 )}
             </main>

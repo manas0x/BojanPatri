@@ -15,7 +15,10 @@ const CheckoutForm = ({ onSubmit, onBack, customers = [], isSelfOrder }) => {
 
     const handlePhoneChange = (val) => {
         setCustomer({ ...customer, phone: val })
-        setShowSuggestions(val.length > 2)
+        // For privacy, never show suggestions in self-order mode (/self)
+        if (!isSelfOrder) {
+            setShowSuggestions(val.length > 2)
+        }
     }
 
     const selectCustomer = (c) => {
@@ -72,7 +75,7 @@ const CheckoutForm = ({ onSubmit, onBack, customers = [], isSelfOrder }) => {
                         placeholder="Type phone or name..."
                     />
 
-                    {showSuggestions && suggestions.length > 0 && (
+                    {showSuggestions && suggestions.length > 0 && !isSelfOrder && (
                         <div className="absolute z-50 w-full mt-2 bg-app-surface border border-app-border rounded-3xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2">
                             {suggestions.map((c, i) => (
                                 <button

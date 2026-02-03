@@ -10,7 +10,7 @@ const AdminQRView = ({ shopname }) => {
 
     return (
         <div className="animate-fade-in p-6">
-            <div className="max-w-md mx-auto bg-white p-12 rounded-[3rem] shadow-2xl text-center border-4 border-indigo-600 relative overflow-hidden print:shadow-none print:border-8 print:p-16">
+            <div className="max-w-md mx-auto bg-white p-8 sm:p-12 rounded-[3rem] shadow-2xl text-center border-4 border-indigo-600 relative overflow-hidden print:shadow-none print:border-8 print:p-16">
                 <div className="absolute top-0 left-0 w-full h-4 bg-indigo-600"></div>
 
                 <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-2 leading-tight">
@@ -18,10 +18,10 @@ const AdminQRView = ({ shopname }) => {
                 </h2>
                 <p className="text-indigo-600 font-bold uppercase tracking-widest text-[12px] mb-10">Digital Menu & Ordering</p>
 
-                <div className="bg-slate-50 p-6 rounded-[2.5rem] inline-block mb-10 border-2 border-slate-100 shadow-inner">
+                <div className="bg-slate-50 p-4 sm:p-6 rounded-[2.5rem] inline-block mb-10 border-2 border-slate-100 shadow-inner max-w-full">
                     <QRCodeSVG
                         value={currentUrl + '/self'}
-                        size={220}
+                        size={Math.min(220, window.innerWidth - 80)}
                         level="H"
                         includeMargin={false}
                         imageSettings={{
