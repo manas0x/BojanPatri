@@ -11,7 +11,7 @@ import {
     orderBy
 } from 'firebase/firestore'
 import { db, auth } from './firebase'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { onAuthStateChanged, signOut, signInAnonymously } from 'firebase/auth'
 import config from '../config.json'
 import Header from './components/Header'
 import Cart from './components/Cart'
@@ -40,8 +40,16 @@ function App() {
 
     // Auth Listener
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (u) => {
-            setUser(u)
+        const unsubscribe = onAuthStateChanged(auth, async (u) => {
+            if (u) {
+                setUser(u)
+            } else {
+                try {
+                    await signInAnonymously(auth)
+                } catch (err) {
+                    console.error("Anonymous auth failed:", err)
+                }
+            }
         })
         return () => unsubscribe()
     }, [])
@@ -276,7 +284,7 @@ function App() {
                 onClose={() => setIsCartOpen(false)}
                 cartItems={cartItems}
                 onUpdateQuantity={handleUpdateQuantity}
-                onCheckout={handleCheckout}
+                onCheckout={(customer, total, paymentMethod) => handleCheckout(customer, total, paymentMethod)}
                 customers={customers}
             />
 

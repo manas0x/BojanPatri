@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
+import AdminQRView from './AdminQRView'
 
-const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, unavailableItems, onToggleAvailability }) => {
-    const [activeTab, setActiveTab] = React.useState('overview') // 'overview', 'inventory'
+const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, unavailableItems, onToggleAvailability, onLogout, user }) => {
+    const [activeTab, setActiveTab] = useState('overview')
 
     const totalRev = orders.reduce((sum, order) => sum + order.total, 0)
     const totalOrders = orders.length
@@ -40,7 +41,7 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
 
     return (
         <div className="animate-fade-in p-6 pb-32">
-            <div className="mb-8 flex justify-between items-start">
+            <div className="mb-8 flex justify-between items-start print:hidden">
                 <div>
                     <div className="flex items-center gap-3">
                         <h2 className="text-4xl font-black text-app-text uppercase tracking-tighter leading-none">Admin</h2>
@@ -53,18 +54,24 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                     </div>
                     <p className="text-emerald-500 font-bold uppercase tracking-widest text-[10px] mt-1">Command Center</p>
                 </div>
-                <div className="bg-app-surface border border-app-border p-1 rounded-2xl flex gap-1 shadow-2xl">
+                <div className="bg-app-surface border border-app-border p-1 rounded-2xl flex gap-1 shadow-2xl overflow-x-auto no-scrollbar max-w-[200px] sm:max-w-none">
                     <button
                         onClick={() => setActiveTab('overview')}
-                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex-shrink-0 ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
                     >
                         Insights
                     </button>
                     <button
                         onClick={() => setActiveTab('inventory')}
-                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex-shrink-0 ${activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
                     >
                         Stock
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('qr')}
+                        className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex-shrink-0 ${activeTab === 'qr' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-app-muted hover:text-app-text'}`}
+                    >
+                        QR Code
                     </button>
                 </div>
             </div>
@@ -134,6 +141,9 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                                         <div className="flex items-center gap-2">
                                             <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'ready' ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-amber-500 shadow-[0_0_10px_#f59e0b]'}`}></span>
                                             <h4 className="text-app-text font-black uppercase text-[12px]">{order.customer.name}</h4>
+                                            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest ${order.paymentMethod === 'UPI' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                                {order.paymentMethod || 'CASH'}
+                                            </span>
                                         </div>
                                         <span className="text-sm font-black text-app-text">₹{order.total}</span>
                                     </div>
@@ -157,7 +167,7 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                         </div>
                     </div>
                 </div>
-            ) : (
+            ) : activeTab === 'inventory' ? (
                 <div className="animate-fade-in space-y-6">
                     <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-3xl flex gap-3 mb-8">
                         <svg className="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -186,6 +196,8 @@ const DashboardView = ({ orders, onRemoveOrder, onToggleStatus, shopname, menu, 
                         })}
                     </div>
                 </div>
+            ) : (
+                <AdminQRView shopname={shopname} />
             )}
         </div>
     )
