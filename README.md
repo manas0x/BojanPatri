@@ -4,7 +4,7 @@
 
 BhojanPatri is a premium, ultra-lightweight self-ordering and food management ecosystem designed to scale restaurant operations from a single outlet to national franchise chains. Engineered for high-volume environments where every second counts.
 
-![BhojanPatri Banner](https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80)
+![BhojanPatri Banner](/banner.png)
 
 ---
 
@@ -50,6 +50,17 @@ BhojanPatri is a premium, ultra-lightweight self-ordering and food management ec
    ```bash
    npm run build
    ```
+
+---
+
+## 🌐 Live Preview
+
+Experience the **BhojanPatri** ecosystem live:
+
+- **Customer App**: [bhojanpatri.web.app](https://bhojanpatri.web.app)
+- **Admin Dashboard**: [bhojanpatri.web.app/admin](https://bhojanpatri.web.app/admin)
+  - **Username**: `admin`
+  - **Password**: `admin123`
 
 ---
 

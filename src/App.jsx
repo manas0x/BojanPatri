@@ -23,9 +23,9 @@ import ProductDetailView from './views/ProductDetailView'
 import DashboardView from './views/DashboardView'
 import PublicInvoiceView from './views/PublicInvoiceView'
 import LoginView from './views/LoginView'
-import OrderHistoryView from './views/OrderHistoryView'
 import LandingView from './views/LandingView'
 import SettingsView from './views/SettingsView'
+import OrderSuccessView from './views/OrderSuccessView'
 
 function App() {
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
@@ -289,8 +289,9 @@ function App() {
             }
 
             setCartItems([])
-            setCurrentView('menu')
-            alert(`Order confirmed via ${paymentMethod}! ID: #${displayId}`)
+            setCurrentView('order-success') // We will handle this view or a specialized success state
+            // notify_user normally, but here we update a local state or just use a nice UI
+            console.log(`Order confirmed via ${paymentMethod}! ID: #${displayId}`)
         } catch (err) {
             console.error("Error adding order: ", err)
             alert("Checkout failed. Please check your connection.")
@@ -448,6 +449,18 @@ function App() {
                         item={selectedProduct}
                         onAddToCart={handleAddToCart}
                         onBack={handleBackToMenu}
+                    />
+                )}
+
+                {currentView === 'order-success' && (
+                    <OrderSuccessView
+                        onHome={handleBackToMenu}
+                    />
+                )}
+
+                {currentView === 'order-success' && (
+                    <OrderSuccessView
+                        onHome={handleBackToMenu}
                     />
                 )}
 
