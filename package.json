@@ -2,7 +2,7 @@
     "name": "bhojanpatri",
     "version": "1.0.0",
     "type": "module",
-    "description": "BojanPatri",
+    "description": "BhojanPatri",
     "main": "index.js",
     "scripts": {
         "dev": "vite",
@@ -24,10 +24,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/manas0x/BojanPatri.git"
+        "url": "git+https://github.com/manas0x/BhojanPatri.git"
     },
     "bugs": {
-        "url": "https://github.com/manas0x/BojanPatri/issues"
+        "url": "https://github.com/manas0x/BhojanPatri/issues"
     },
-    "homepage": "https://github.com/manas0x/BojanPatri#readme"
+    "homepage": "https://github.com/manas0x/BhojanPatri#readme"
 }
